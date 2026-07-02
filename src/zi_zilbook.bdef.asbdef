@@ -1,0 +1,60 @@
+managed implementation in class zbp_i_zilbook unique;
+strict ( 2 );
+
+define behavior for ZI_ZILBOOK
+persistent table zlib_book_dev
+lock master
+authorization master ( instance )
+{
+  create ( authorization : global );
+  update;
+  delete;
+
+  field ( readonly : update ) BookId;
+
+  association _Issue { create; }
+
+  mapping for zlib_book_dev
+  {
+    BookId             = book_id;
+    Title              = title;
+    Isbn               = isbn;
+    TotalBroCount  = total_bro_count;
+
+  }
+}
+define behavior for ZI_ZLissuse
+persistent table zlib_issue_dev
+lock dependent by _Book
+authorization dependent by _Book
+{
+  update;
+  delete;
+
+  field ( readonly ) IssueUuid;
+  field ( readonly : update ) BookId;
+
+  validation validateDates
+    on save
+    {
+      create;
+      update;
+    }
+
+  determination calculateBorrowCount
+    on save
+    {
+      create;
+    }
+
+  association _Book;
+
+  mapping for zlib_issue_dev
+  {
+    IssueUuid = issue_uuid;
+    BookId    = book_id;
+    MemberId  = member_id;
+    IssueDate = issue_date;
+    ReturnDate = return_date;
+  }
+}
